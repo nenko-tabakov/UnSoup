@@ -9,10 +9,9 @@ import java.lang.annotation.Target;
  * Extracts the specified attribute value and sets it to the annotated field
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.FIELD)
+@Target({ElementType.FIELD, ElementType.METHOD})
 public @interface AttributeMapping {
-
-    String selector() default "";
+    String selector();
 
     String name();
 }
