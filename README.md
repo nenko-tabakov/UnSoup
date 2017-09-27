@@ -2,7 +2,7 @@
 
 A simple and naive framework for that strange moment when you need to extract parts of html page to structured data.
 
-##Sample usage 
+## Sample usage 
 
 The following HTML code 
 
@@ -62,7 +62,7 @@ Brand brand = unsoup.unsoup(new File("brands.html"), Brand.class);
 
 See the tests for more examples 
 
-##Annotations (so far...) 
+## Annotations (so far...) 
 
 ```html 
 
