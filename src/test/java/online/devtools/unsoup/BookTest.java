@@ -5,6 +5,7 @@ import org.junit.Test;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
 import java.util.Collection;
 
 public class BookTest {
@@ -37,67 +38,6 @@ public class BookTest {
         Assert.assertEquals(364, book.getPages());
     }
 
-    interface Book {
-        String getName();
-
-        String getDescription();
-
-        String getIsbn();
-
-        Collection<String> getContents();
-
-        Integer getChapters();
-
-        int getPages();
-    }
-
-
-    static class AnnotatedFieldsBook implements Book {
-
-        @ElementMapping(selector = ".book-header h1")
-        private String name;
-
-        @ElementMapping(selector = ".book-header .subheading")
-        private String description;
-
-        @ElementMapping(selector = ".book-header .isbn")
-        private String isbn;
-
-
-        @ElementMapping(selector = ".table-of-contents-wrapper li")
-        private Collection<String> contents;
-
-        @ElementMapping(selector = ".book-detail.chapters")
-        private Integer chapters;
-
-        @ElementMapping(selector = ".book-detail.pages")
-        private int pages;
-
-        public String getName() {
-            return name;
-        }
-
-        public String getDescription() {
-            return description;
-        }
-
-        public String getIsbn() {
-            return isbn;
-        }
-
-        public Collection<String> getContents() {
-            return contents;
-        }
-
-        public Integer getChapters() {
-            return chapters;
-        }
-
-        public int getPages() {
-            return pages;
-        }
-    }
-
     static class AnnotatedMethodsBook implements Book {
 
         private String name;
@@ -128,7 +68,7 @@ public class BookTest {
         }
 
         @ElementMapping(selector = ".table-of-contents-wrapper li")
-        public void setContents(Collection<String> contents) {
+        public void setContents(ArrayList<String> contents) {
             this.contents = contents;
         }
 
