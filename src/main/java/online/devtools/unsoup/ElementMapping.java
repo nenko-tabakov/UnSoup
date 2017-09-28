@@ -14,4 +14,6 @@ public @interface ElementMapping {
     String selector();
 
     Class<?> type() default String.class;
+
+    String attributeName() default "";
 }

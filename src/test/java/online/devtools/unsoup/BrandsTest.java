@@ -6,17 +6,16 @@ import org.junit.Test;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
-import java.util.Collection;
 
 
 public class BrandsTest {
 
     static class Brand {
 
-        @AttributeMapping(selector = ".brands a", name = "href")
+        @ElementMapping(selector = ".brands a", attributeName = "href")
         public String href;
 
-        @AttributeMapping(selector = ".brands a", name = "title")
+        @ElementMapping(selector = ".brands a", attributeName = "title")
         public String title;
 
         @ElementMapping(selector = ".brands a")
@@ -28,12 +27,12 @@ public class BrandsTest {
 
         public String methodInjectedHref;
 
-        @AttributeMapping(selector = ".brands a", name = "href")
+        @ElementMapping(selector = ".brands a", attributeName = "href")
         public void setHref(String href) {
             this.methodInjectedHref = href;
         }
 
-        @AttributeMapping(selector = ".brands a", name = "title")
+        @ElementMapping(selector = ".brands a", attributeName = "title")
         public void setTitle(String title) {
             this.methodInjectedTitle = title;
         }

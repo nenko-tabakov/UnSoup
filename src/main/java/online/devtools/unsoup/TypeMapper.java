@@ -9,6 +9,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Collection;
+import java.util.function.Function;
 
 class TypeMapper {
 
@@ -18,14 +19,15 @@ class TypeMapper {
         this.document = document;
     }
 
+
     private <T> T fromElementToModel(Element element, Class<T> model) throws IllegalAccessException, InstantiationException, InvocationTargetException {
+
         final T modelInstance = model.newInstance();
 
         for (final Field field : model.getDeclaredFields()) {
-            final Class<?> fieldType = field.getType();
-            field.setAccessible(true);
-            final Object value = getValue(element, fieldType, field);
+            final Object value = getValue(element, field.getType(), field);
             if (value != null) {
+                field.setAccessible(true);
                 field.set(modelInstance, value);
             }
         }
@@ -43,12 +45,12 @@ class TypeMapper {
         return modelInstance;
     }
 
-    private <T extends Collection> T fromElementsToCollection(Elements elements, Class<?> container, Class<?> type) throws IllegalAccessException, InstantiationException, InvocationTargetException {
+    private <T extends Collection> T fromElementsToCollection(Elements elements, Class<?> container, Class<?> type, AccessibleObject accessibleObject) throws IllegalAccessException, InstantiationException, InvocationTargetException {
         final T t = (T) container.newInstance();
 
         for (Element element : elements) {
             if (PrimitiveTypesExtractor.isSupportedType(type)) {
-                t.add(PrimitiveTypesExtractor.fromElement(element, type));
+                t.add(getValue(element, type, accessibleObject));
             } else {
                 t.add(fromElementToModel(element, type));
             }
@@ -61,19 +63,18 @@ class TypeMapper {
         final T modelInstance = model.newInstance();
 
         for (final Field field : model.getDeclaredFields()) {
-            final Class<?> fieldType = field.getType();
             final Elements elements = getElements(document, field);
             if (elements != null && !elements.isEmpty()) {
                 field.setAccessible(true);
-                field.set(modelInstance, getValue(elements, fieldType, field));
+                field.set(modelInstance, getValue(elements, field.getType(), field));
             }
         }
 
         for (final Method method : model.getDeclaredMethods()) {
             if (method.getParameterCount() == 1) {
-                final Class<?> methodType = method.getParameters()[0].getType();
                 final Elements elements = getElements(document, method);
                 if (elements != null && !elements.isEmpty()) {
+                    final Class<?> methodType = method.getParameters()[0].getType();
                     method.invoke(modelInstance, getValue(elements, methodType, method));
                 }
             }
@@ -86,37 +87,35 @@ class TypeMapper {
         if (Collection.class.isAssignableFrom(model)) {
             final ElementMapping elementMapping = accessibleObject.getAnnotation(ElementMapping.class);
             if (elementMapping != null) {
-                return fromElementsToCollection(elements, model, elementMapping.type());
+                return fromElementsToCollection(elements, model, elementMapping.type(), accessibleObject);
             }
+
+            return null;
         } else if (PrimitiveTypesExtractor.isSupportedType(model)) {
             return getValue(elements.first(), model, accessibleObject);
         }
+
         return map(model);
     }
 
     private <T> T getValue(Element element, Class<T> type, AccessibleObject accessibleObject) {
-        final ElementMapping elementMapping = accessibleObject.getAnnotation(ElementMapping.class);
-        if (elementMapping != null) {
+        return getValueIfAnnotationPresent(accessibleObject, elementMapping -> {
+            final String attributeName = elementMapping.attributeName();
+            if (!attributeName.isEmpty()) {
+                return PrimitiveTypesExtractor.fromAttribute(element, type, attributeName);
+            }
             return PrimitiveTypesExtractor.fromElement(element, type);
-        }
-
-        final AttributeMapping attributeMapping = accessibleObject.getAnnotation(AttributeMapping.class);
-        if (attributeMapping != null) {
-            return PrimitiveTypesExtractor.fromAttribute(element, type, attributeMapping.name());
-        }
-
-        return null;
+        });
     }
 
     private Elements getElements(Document document, AccessibleObject accessibleObject) {
+        return getValueIfAnnotationPresent(accessibleObject, elementMapping -> document.select(elementMapping.selector()));
+    }
+
+    private <T> T getValueIfAnnotationPresent(AccessibleObject accessibleObject, Function<ElementMapping, T> valueExtractor) {
         final ElementMapping elementMapping = accessibleObject.getAnnotation(ElementMapping.class);
         if (elementMapping != null) {
-            return document.select(elementMapping.selector());
-        }
-
-        final AttributeMapping attributeMapping = accessibleObject.getAnnotation(AttributeMapping.class);
-        if (attributeMapping != null) {
-            return document.select(attributeMapping.selector());
+            return valueExtractor.apply(elementMapping);
         }
 
         return null;

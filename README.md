@@ -66,10 +66,13 @@ See the tests for more examples
 
 ```html 
 
-@AttrbiuteMapping(selector, name /*attribute name to be read*/) 
+@Target({ElementType.FIELD, ElementType.METHOD})
+public @interface ElementMapping {
+    String selector();
 
-@ElementMapping (selector, type /*String by default*/) 
+    Class<?> type() default String.class;
+
+    String attributeName() default "";
+}
 
 ``` 
-
-The annotations can be applied to fields and methods 
