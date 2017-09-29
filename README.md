@@ -30,10 +30,10 @@ can be mapped to this class
 ```java 
 public class Brand { 
 
-    @AttributeMapping(selector = ".brands a", name = "href") 
+    @ElementMapping(selector = ".brands a", attributeName = "href") 
     private String href; 
 
-    @AttributeMapping(selector = ".brands a", name = "title") 
+    @ElementMapping(selector = ".brands a", attributeName = "title") 
     private String title; 
 
     @ElementMapping(selector = ".brands a") 
