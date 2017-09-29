@@ -100,11 +100,14 @@ class TypeMapper {
 
     private <T> T getValue(Element element, Class<T> type, AccessibleObject accessibleObject) {
         return getValueIfAnnotationPresent(accessibleObject, elementMapping -> {
+            final String selector = elementMapping.selector();
             final String attributeName = elementMapping.attributeName();
+
+            final Element elementToExtract = selector.isEmpty() ? element : element.select(selector).first();
             if (!attributeName.isEmpty()) {
-                return PrimitiveTypesExtractor.fromAttribute(element, type, attributeName);
+                return PrimitiveTypesExtractor.fromAttribute(elementToExtract, type, attributeName);
             }
-            return PrimitiveTypesExtractor.fromElement(element, type);
+            return PrimitiveTypesExtractor.fromElement(elementToExtract, type);
         });
     }
 
